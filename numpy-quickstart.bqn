@@ -120,6 +120,7 @@ b
 5 {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨} 10‿30  # dzaima, BQN message board, does not work for default w value
 #⟨ 10 15 20 25 ⟩
 ARange ← {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨}
+#ARange ← ((⊑⊢)+(⊣×(↕∘⌈(-´(⌽⊢)÷⊣))))
 5 ARange 10‿30
 #⟨ 10 15 20 25 ⟩
 # a + c×↕⌊c÷˜b - a  dutchie, BQN message board: packing params in list poor BQN, just write as needed, like
@@ -224,39 +225,45 @@ c ← a - b
 #array([0, 1, 4, 9])
 b ⋆ 2
 #⟨ 0 1 4 9 ⟩
-
 #>>> 10 * np.sin(a)
 #array([ 9.12945251, -9.88031624,  7.4511316 , -2.62374854])
-
-#sin ← {
-#    half ←  5.00000000000000000000e¯01   # 0x3FE00000, 0x00000000
-#    S1   ← ¯1.66666666666666324348e¯01   # 0xBFC55555, 0x55555549
-#    S2   ←  8.33333333332248946124e¯03   # 0x3F811111, 0x1110F8A6
-#    S3   ← ¯1.98412698298579493134e¯04   # 0xBF2A01A0, 0x19C161D5
-#    S4   ←  2.75573137070700676789e¯06   # 0x3EC71DE3, 0x57B1FE7D
-#    S5   ← ¯2.50507602534068634195e¯08   # 0xBE5AE5E6, 0x8A2B9CEB
-#    S6   ←  1.58969099521155010221e¯10   # 0x3DE5D93A, 0x5ACFD57C
-#
-##ifdef __STDC__
-#	double __kernel_sin(double x, double y, int iy)
-##else
-#	double __kernel_sin(x, y, iy)
-#	double x,y; int iy;		/* iy=0 if y is zero */
-##endif
-#{
-#	double z,r,v;
-#	int ix;
-#	ix = __HI(x)&0x7fffffff;	/* high word of x */
-#	if(ix<0x3e400000)			/* |x| < 2**-27 */
-#	   {if((int)x==0) return x;}		/* generate inexact */
-#	z	=  x*x;
-#	v	=  z*x;
-#	r	=  S2+z*(S3+z*(S4+z*(S5+z*S6)));
-#	if(iy==0) return x+v*(S1+z*r);
-#	else      return x-((z*(half*y-v*r)-y)-v*S1);
-#}
-
-Sin ← { 𝕩 - ((𝕩⋆3)÷6) + ((𝕩⋆5)÷120) - ((𝕩⋆7)÷5040) }
-10 × Sin¨ a
+10 × •math.Sin a
+⟨ 9.129452507276277 ¯9.880316240928618 7.451131604793488 ¯2.623748537039288 ⟩
 #>>> a < 35
 #array([ True,  True, False, False])
+a < 35
+⟨ 1 1 0 0 ⟩
+
+#>>> A = np.array([[1, 1],
+#...               [0, 1]])
+a ← >>⟨1‿1, 0‿1⟩
+#┌─
+#╵ 1 1
+#  0 1
+#      ┘
+#>>> B = np.array([[2, 0],
+#...               [3, 4]])
+b ← >>⟨2‿0, 3‿4⟩
+#┌─
+#╵ 2 0
+#  3 4
+#      ┘
+#>>> A * B     # elementwise product
+#array([[2, 0],
+#       [0, 4]])
+a × b
+#┌─
+#╵ 2 0
+#  0 4
+#      ┘
+#>>> A @ B     # matrix product
+#array([[5, 4],
+#       [3, 4]])
+a +˝∘×⎉1‿∞ b
+#┌─
+#╵ 5 4
+#  3 4
+#      ┘
+#>>> A.dot(B)  # another matrix product
+#array([[5, 4],
+#       [3, 4]])
