@@ -122,8 +122,22 @@ b
 #⟨ 10 15 20 25 ⟩
 5 {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨} 10‿30  # dzaima, BQN message board, does not work for default w value
 #⟨ 10 15 20 25 ⟩
-ARange ← {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨}
+#ARange ← {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨}
 #ARange ← ((⊑⊢)+(⊣×(↕∘⌈(-´(⌽⊢)÷⊣))))
+#ARange ← ((⊑⊢)+(⊣×(↕∘⌈(⊣÷˜(-´⌽⊢)))))
+#ARange ← ((⊑⊢)+(⊣×(↕∘⌈⊣÷˜-´∘(⌽⊢))))
+ARange ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}  # Marshal, see chat below ...
+# BQN chat >>>>
+#Marshall
+#It can be simplified, but I don't think you'll end up improving over the block version.
+#The outermost set of parens, and one of the inside sets, can be removed, and with · you could get rid of two more sets.
+#Marshall
+#Personally I would probably use this long version because I think it describes what's being done most clearly.
+#ARange ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}
+#That is, you're going to produce a list of numbers with ↕∘⌈, and then apply a+c×⊢ to the results. And you want it to end after b. So you undo that transformation beforehand, then reapply it after.
+#dzaima
+#damn, ⌾(F⁼) is pretty nice. Had a header+under version, but without the ⁼, and as such it was pretty ugly
+# <<<<
 5 ARange 10‿30
 #⟨ 10 15 20 25 ⟩
 # a + c×↕⌊c÷˜b - a  dutchie, BQN message board: packing params in list poor BQN, just write as needed, like
@@ -141,15 +155,18 @@ ARange ← {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨}
 #array([0.  , 0.25, 0.5 , 0.75, 1.  , 1.25, 1.5 , 1.75, 2.  ])
 0+(2÷8)×↕9
 #⟨ 0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 ⟩
-Linspace ← {(⊑𝕩+((1⊑𝕩)÷(𝕨-1))×↕𝕨}  # probably not good BQN
+#Linspace ← {(⊑𝕩+((1⊑𝕩)÷(𝕨-1))×↕𝕨}  # probably not good BQN
+#Linspace ← {(⊑𝕩)+ (1⊑𝕩)× ↕⊸÷⟜(-⟜1) 𝕨}  # another version, would like pure tacit version TODO
+Linspace ← ((⊑⊢)+(↕⊣)×(-´∘⌽⊢)÷-⟜1)  # TODO rewrite like Marshall's ARange above
 9 Linspace 0‿2
 #⟨ 0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 ⟩
 #>>> x = np.linspace(0, 2 * pi, 100)        # useful to evaluate function at lots of points
 #>>> f = np.sin(x)
 0+(2×π÷99)×↕100
 0+ (2×π)× ↕⊸÷⟜(-⟜1) 100
-100 Linspace 0‿2×π
-Linspace ← {(⊑𝕩)+ (1⊑𝕩)× ↕⊸÷⟜(-⟜1) 𝕨}  # another version, would like pure tacit version TODO
+•math.Sin(↕100)×2×π÷99
+x ← 100 Linspace 0‿2×π
+f ← •math.Sin x
 
 ## Printing Arrays
 #>>> a = np.arange(6)                    # 1d array
@@ -418,3 +435,78 @@ c ← 2‿¯1‿4
 #array([2., 0., 6.])
 b + c
 ⟨ 2 0 6 ⟩
+
+## Index, Slicing, and Iterating
+
+#>>> a = np.arange(10)**3
+#>>> a
+#array([  0,   1,   8,  27,  64, 125, 216, 343, 512, 729])
+a ← ↕10 ⋆ 3
+#⟨ 0 1 8 27 64 125 216 343 512 729 ⟩
+#>>> a[2]
+#8
+2⊑a
+#8
+#>>> a[2:5]
+#array([ 8, 27, 64])
+3↑2↓a  # TODO, not quite. want to slice with original indicies
+#⟨ 8 27 64 ⟩
+#>>> # equivalent to a[0:6:2] = 1000;
+#>>> # from start to position 6, exclusive, set every 2nd element to 1000
+#>>> a[:6:2] = 1000
+#>>> a
+#array([1000,    1, 1000,   27, 1000,  125,  216,  343,  512,  729])
+# TODO
+
+#>>> a[::-1]  # reversed a
+#array([ 729,  512,  343,  216,  125, 1000,   27, 1000,    1, 1000])
+⌽a
+#>>> for i in a:
+#...     print(i**(1 / 3.))
+#...
+#9.999999999999998
+#1.0
+#9.999999999999998
+#3.0
+#9.999999999999998
+#4.999999999999999
+#5.999999999999999
+#6.999999999999999
+#7.999999999999999
+#8.999999999999998
+# TODO
+
+#>>> def f(x, y):
+#...     return 10 * x + y
+#...
+F ← (⊢+10×⊣)
+#>>> b = np.fromfunction(f, (5, 4), dtype=int)
+#>>> b
+#array([[ 0,  1,  2,  3],
+#       [10, 11, 12, 13],
+#       [20, 21, 22, 23],
+#       [30, 31, 32, 33],
+#       [40, 41, 42, 43]])
+b ← (↕5)F⌜↕4
+#┌─
+#╵  0  1  2  3
+#  10 11 12 13
+#  20 21 22 23
+#  30 31 32 33
+#  40 41 42 43
+#              ┘
+#>>> b[2, 3]
+#23
+2‿3 ⊑ b
+#23
+#>>> b[0:5, 1]  # each row in the second column of b
+#array([ 1, 11, 21, 31, 41])
+# TODO explicit rows, all rows below
+#>>> b[:, 1]    # equivalent to the previous example
+#array([ 1, 11, 21, 31, 41])
+1⊑˘b
+#⟨ 1 11 21 31 41 ⟩
+#>>> b[1:3, :]  # each column in the second and third row of b
+#array([[10, 11, 12, 13],
+#       [20, 21, 22, 23]])
+# TODO
