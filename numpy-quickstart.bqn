@@ -122,23 +122,23 @@ b
 #⟨ 10 15 20 25 ⟩
 5 {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨} 10‿30  # dzaima, BQN message board, does not work for default w value
 #⟨ 10 15 20 25 ⟩
-#ARange ← {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨}
-#ARange ← ((⊑⊢)+(⊣×(↕∘⌈(-´(⌽⊢)÷⊣))))
-#ARange ← ((⊑⊢)+(⊣×(↕∘⌈(⊣÷˜(-´⌽⊢)))))
-#ARange ← ((⊑⊢)+(⊣×(↕∘⌈⊣÷˜-´∘(⌽⊢))))
-ARange ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}  # Marshal, see chat below ...
+#Range ← {(⊑𝕩)+𝕨×↕⌈(-´⌽𝕩)÷𝕨}
+#Range ← ((⊑⊢)+(⊣×(↕∘⌈(-´(⌽⊢)÷⊣))))
+#Range ← ((⊑⊢)+(⊣×(↕∘⌈(⊣÷˜(-´⌽⊢)))))
+#Range ← ((⊑⊢)+(⊣×(↕∘⌈⊣÷˜-´∘(⌽⊢))))
+Range ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}  # Marshal, see chat below ...
 # BQN chat >>>>
 #Marshall
 #It can be simplified, but I don't think you'll end up improving over the block version.
 #The outermost set of parens, and one of the inside sets, can be removed, and with · you could get rid of two more sets.
 #Marshall
 #Personally I would probably use this long version because I think it describes what's being done most clearly.
-#ARange ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}
+#Range ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}
 #That is, you're going to produce a list of numbers with ↕∘⌈, and then apply a+c×⊢ to the results. And you want it to end after b. So you undo that transformation beforehand, then reapply it after.
 #dzaima
 #damn, ⌾(F⁼) is pretty nice. Had a header+under version, but without the ⁼, and as such it was pretty ugly
 # <<<<
-5 ARange 10‿30
+5 Range 10‿30
 #⟨ 10 15 20 25 ⟩
 # a + c×↕⌊c÷˜b - a  dutchie, BQN message board: packing params in list poor BQN, just write as needed, like
 10 + 5×↕⌊5÷˜30 - 10
@@ -148,7 +148,7 @@ ARange ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}  # Marshal, see chat below
 #array([0. , 0.3, 0.6, 0.9, 1.2, 1.5, 1.8])
 (1.8÷6)×↕7
 #⟨ 0 0.3 0.6 0.8999999999999999 1.2 1.5 1.8 ⟩
-0.3 ARange 0‿2
+0.3 Range 0‿2
 #⟨ 0 0.3 0.6 0.8999999999999999 1.2 1.5 1.8 ⟩
 
 #>>> np.linspace(0, 2, 9)                   # 9 numbers from 0 to 2
@@ -157,7 +157,7 @@ ARange ← {c𝕊a‿b: ↕∘⌈⌾((a+c×⊢)⁼)b}  # Marshal, see chat below
 #⟨ 0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 ⟩
 #Linspace ← {(⊑𝕩+((1⊑𝕩)÷(𝕨-1))×↕𝕨}  # probably not good BQN
 #Linspace ← {(⊑𝕩)+ (1⊑𝕩)× ↕⊸÷⟜(-⟜1) 𝕨}  # another version, would like pure tacit version TODO
-Linspace ← ((⊑⊢)+(↕⊣)×(-´∘⌽⊢)÷-⟜1)  # TODO rewrite like Marshall's ARange above
+Linspace ← ((⊑⊢)+(↕⊣)×(-´∘⌽⊢)÷-⟜1)  # TODO rewrite like Marshall's Range above
 9 Linspace 0‿2
 #⟨ 0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 ⟩
 #>>> x = np.linspace(0, 2 * pi, 100)        # useful to evaluate function at lots of points
@@ -413,6 +413,23 @@ b ← 3‿4 ⥊ ↕12
 #  8 17 27 38
 #             ┘
 
+# https://aplwiki.com/wiki/Rank_%28operator%29
+# https://mlochbaum.github.io/BQN/doc/leading.html
+# rank docs in the JforC book to be very helpful in understanding rank and leading axis concepts.
+#+˝⎉2 means to apply +˝ on cells of rank 2. With a rank-2 argument, the entire array is a cell, so it's the same as applying +˝ without any Rank modifier.
+#With ⌊˝⎉1, you're applying to 1-cells, which are rows. So "minimum of each row" is basically a direct translation.
+# https://www.jsoftware.com/help/jforc/loopless_code_i_verbs_have_r.htm#_Toc191734333
+# https://www.jsoftware.com/docs/help807/jforc/contents.htm
+#   cells rank
+#One thing to watch out for if you're coming from Numpy is that numpy shapes are "trailing axis matching" whereas most array languages have "leading axis matching". IMO that's numpy's biggest design mistake.
+#This shows up in situations like where you have 1 2 3 and 10 11 12 13 and you'd like to add them, resulting in a 3x4 matrix like this:
+#11 12 13 14
+#12 13 14 15
+#13 14 15 16
+#In numpy, you end up adding an axis to one or the other of the data. In array languages, you apply the function to a subset of the data (BQN uses "depth" for this I think).
+#That's one of the best features of array langs, in my opinion. Modify the function to fit the data, rather than modify the data to fit weird broadcasting rules.
+
+
 ## Universal Functions
 
 #>>> B = np.arange(3)
@@ -441,7 +458,8 @@ b + c
 #>>> a = np.arange(10)**3
 #>>> a
 #array([  0,   1,   8,  27,  64, 125, 216, 343, 512, 729])
-a ← ↕10 ⋆ 3
+a ← (↕10)⋆3
+a ← 3⋆˜↕10
 #⟨ 0 1 8 27 64 125 216 343 512 729 ⟩
 #>>> a[2]
 #8
@@ -450,6 +468,10 @@ a ← ↕10 ⋆ 3
 #>>> a[2:5]
 #array([ 8, 27, 64])
 3↑2↓a  # TODO, not quite. want to slice with original indicies
+(2+↕3)⊏a  # better, still not quite
+(2+↕5-2)⊏a  # now in terms of indicies, but not great
+Slice ← (1 Range ⊣)⊏⊢  # might be ok, need Range with w default to 1
+2‿5 Slice a
 #⟨ 8 27 64 ⟩
 #>>> # equivalent to a[0:6:2] = 1000;
 #>>> # from start to position 6, exclusive, set every 2nd element to 1000
@@ -510,3 +532,7 @@ b ← (↕5)F⌜↕4
 #array([[10, 11, 12, 13],
 #       [20, 21, 22, 23]])
 # TODO
+#a←3⋆˜↕10 ⋄ a 1000¨⌾((2×↕3)⊸⊏)
+1000¨⌾((2×↕3)⊸⊏) a
+a 1000¨⌾((2×↕3)⊸⊏)↩  # not perfect, probably want in terms of 2 and 6, but ok
+⟨ 1000 1 1000 27 1000 125 216 343 512 729 ⟩
