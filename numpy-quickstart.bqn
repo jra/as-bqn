@@ -222,7 +222,7 @@ c ← 2‿3‿4 ⥊ ↕24
 # [9700 9701 9702 ... 9797 9798 9799]
 # [9800 9801 9802 ... 9897 9898 9899]
 # [9900 9901 9902 ... 9997 9998 9999]]
-# BQN no abreviated output?
+# BQN no abreviated output? format?
 
 #>>> np.set_printoptions(threshold=sys.maxsize)  # sys module should be imported
 
@@ -230,6 +230,8 @@ c ← 2‿3‿4 ⥊ ↕24
 
 #>>> a = np.array([20, 30, 40, 50])
 a ← 20‿30‿40‿50
+a ← 10 Range 20‿60
+a ← 20+10×↕4
 #⟨ 20 30 40 50 ⟩
 #>>> b = np.arange(4)
 #>>> b
@@ -256,14 +258,14 @@ a < 35
 
 #>>> A = np.array([[1, 1],
 #...               [0, 1]])
-a ← >>⟨1‿1, 0‿1⟩
+a ← >⟨1‿1, 0‿1⟩
 #┌─
 #╵ 1 1
 #  0 1
 #      ┘
 #>>> B = np.array([[2, 0],
 #...               [3, 4]])
-b ← >>⟨2‿0, 3‿4⟩
+b ← >⟨2‿0, 3‿4⟩
 #┌─
 #╵ 2 0
 #  3 4
@@ -393,7 +395,7 @@ b ← 3‿4 ⥊ ↕12
 #array([0, 4, 8])
 ⌊˝⍉b  # probably a better way, TODO
 ⟨ 0 4 8 ⟩
-⌊˝⎉1 b  # from BQN create
+⌊˝⎉1 b  # from BQNcrate
 ⟨ 0 4 8 ⟩
 #>>>
 #>>> b.cumsum(axis=1)  # cumulative sum along each row
@@ -468,17 +470,22 @@ a ← 3⋆˜↕10
 #>>> a[2:5]
 #array([ 8, 27, 64])
 3↑2↓a  # TODO, not quite. want to slice with original indicies
-(2+↕3)⊏a  # better, still not quite
+(2+↕3)⊏a  # better, still not quite, using first index + length
 (2+↕5-2)⊏a  # now in terms of indicies, but not great
 Slice ← (1 Range ⊣)⊏⊢  # might be ok, need Range with w default to 1
 2‿5 Slice a
+(↕⌾(-⟜2)5) ⊏ a  # thish should be pretty close to ok/good BQN
 #⟨ 8 27 64 ⟩
 #>>> # equivalent to a[0:6:2] = 1000;
 #>>> # from start to position 6, exclusive, set every 2nd element to 1000
 #>>> a[:6:2] = 1000
 #>>> a
 #array([1000,    1, 1000,   27, 1000,  125,  216,  343,  512,  729])
-# TODO
+# TODO study / understand this
+#a←3⋆˜↕10 ⋄ a 1000¨⌾((2×↕3)⊸⊏)
+1000¨⌾((2×↕3)⊸⊏) a
+a 1000¨⌾((2×↕3)⊸⊏)↩  # not perfect, probably want in terms of 2 and 6, but ok
+⟨ 1000 1 1000 27 1000 125 216 343 512 729 ⟩
 
 #>>> a[::-1]  # reversed a
 #array([ 729,  512,  343,  216,  125, 1000,   27, 1000,    1, 1000])
@@ -496,7 +503,18 @@ Slice ← (1 Range ⊣)⊏⊢  # might be ok, need Range with w default to 1
 #6.999999999999999
 #7.999999999999999
 #8.999999999999998
-# TODO
+(•Show 3⊸√)¨ a
+#9.999999999999998
+#1
+#9.999999999999998
+#3
+#9.999999999999998
+#4.999999999999999
+#5.999999999999999
+#6.999999999999999
+#7.999999999999999
+#8.999999999999998
+#⟨ 9.999999999999998 1 9.999999999999998 3 9.999999999999998 4.999999999999999 5.999999999999999 6.999999999999999 7.999999999999999 8.999999999999998 ⟩
 
 #>>> def f(x, y):
 #...     return 10 * x + y
@@ -523,7 +541,8 @@ b ← (↕5)F⌜↕4
 #23
 #>>> b[0:5, 1]  # each row in the second column of b
 #array([ 1, 11, 21, 31, 41])
-# TODO explicit rows, all rows below
+((↕5)≍¨5⥊1) ⊑ b  # explicit rows, all rows below
+#⟨ 1 11 21 31 41 ⟩
 #>>> b[:, 1]    # equivalent to the previous example
 #array([ 1, 11, 21, 31, 41])
 1⊑˘b
@@ -531,8 +550,122 @@ b ← (↕5)F⌜↕4
 #>>> b[1:3, :]  # each column in the second and third row of b
 #array([[10, 11, 12, 13],
 #       [20, 21, 22, 23]])
-# TODO
-#a←3⋆˜↕10 ⋄ a 1000¨⌾((2×↕3)⊸⊏)
-1000¨⌾((2×↕3)⊸⊏) a
-a 1000¨⌾((2×↕3)⊸⊏)↩  # not perfect, probably want in terms of 2 and 6, but ok
-⟨ 1000 1 1000 27 1000 125 216 343 512 729 ⟩
+1‿2⊏b
+#┌─
+#╵ 10 11 12 13
+#  20 21 22 23
+#              ┘
+
+#>>> b[-1]   # the last row. Equivalent to b[-1, :]
+#array([40, 41, 42, 43])
+¯1⊏b
+#⟨ 40 41 42 43 ⟩
+
+#>>> c = np.array([[[  0,  1,  2],  # a 3D array (two stacked 2D arrays)
+#...                [ 10, 12, 13]],
+#...               [[100, 101, 102],
+#...                [110, 112, 113]]])
+c ← >>⟨⟨0‿1‿2, 10‿12‿13⟩, ⟨100‿101‿102, 110‿112‿113⟩⟩
+#┌─
+#╎   0   1   2
+#   10  12  13
+#
+#  100 101 102
+#  110 112 113
+#              ┘
+# TODO construct c more cleverly
+#>>> c.shape
+#(2, 2, 3)
+≢c
+#⟨ 2 2 3 ⟩
+#>>> c[1, ...]  # same as c[1, :, :] or c[1]
+#array([[100, 101, 102],
+#       [110, 112, 113]])
+1⊏c
+1⊏⎉3 c  # more explicit
+#┌─
+#╵ 100 101 102
+#  110 112 113
+#              ┘
+#>>> c[..., 2]  # same as c[:, :, 2]
+#array([[  2,  13],
+#       [102, 113]])
+2⊏⎉1 c
+#┌─
+#╵   2  13
+#  102 113
+#          ┘
+
+#>>> for row in b:
+#...     print(row)
+#...
+#[0 1 2 3]
+#[10 11 12 13]
+#[20 21 22 23]
+#[30 31 32 33]
+#[40 41 42 43]
+•Show˘ b
+#⟨ 0 1 2 3 ⟩
+#⟨ 10 11 12 13 ⟩
+#⟨ 20 21 22 23 ⟩
+#⟨ 30 31 32 33 ⟩
+#⟨ 40 41 42 43 ⟩
+#┌─
+#╵  0  1  2  3
+#  10 11 12 13
+#  20 21 22 23
+#  30 31 32 33
+#  40 41 42 43
+#              ┘
+
+#>>> for element in b.flat:
+#...     print(element)
+#...
+#0
+#1
+#2
+#3
+#10
+#11
+#12
+#13
+#20
+#21
+#22
+#23
+#30
+#31
+#32
+#33
+#40
+#41
+#42
+#43
+•Show¨ b
+#0
+#1
+#2
+#3
+#10
+#11
+#12
+#13
+#20
+#21
+#22
+#23
+#30
+#31
+#32
+#33
+#40
+#41
+#42
+#43
+#┌─
+#╵  0  1  2  3
+#  10 11 12 13
+#  20 21 22 23
+#  30 31 32 33
+#  40 41 42 43
+#              ┘
