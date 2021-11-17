@@ -669,3 +669,252 @@ c ← >>⟨⟨0‿1‿2, 10‿12‿13⟩, ⟨100‿101‿102, 110‿112‿113⟩
 #  30 31 32 33
 #  40 41 42 43
 #              ┘
+
+
+#>>> a = np.floor(10 * rg.random((3, 4)))
+#>>> a
+#array([[3., 7., 3., 4.],
+#       [1., 4., 2., 2.],
+#       [7., 2., 4., 9.]])
+#>>> a.shape
+#(3, 4)
+
+   a ← ⌊10×3‿4 •rand.Range 0
+┌─
+╵ 4 0 6 8
+  6 3 2 0
+  5 3 9 8
+          ┘
+   ≢a
+⟨ 3 4 ⟩
+
+
+#>>> a.ravel()  # returns the array, flattened
+#array([3., 7., 3., 4., 1., 4., 2., 2., 7., 2., 4., 9.])
+#>>> a.reshape(6, 2)  # returns the array with a modified shape
+#array([[3., 7.],
+#       [3., 4.],
+#       [1., 4.],
+#       [2., 2.],
+#       [7., 2.],
+#       [4., 9.]])
+#>>> a.T  # returns the array, transposed
+#array([[3., 1., 7.],
+#       [7., 4., 2.],
+#       [3., 2., 4.],
+#       [4., 2., 9.]])
+#>>> a.T.shape
+#(4, 3)
+#>>> a.shape
+#(3, 4)
+
+   ⥊a
+⟨ 4 0 6 8 6 3 2 0 5 3 9 8 ⟩
+   6‿2⥊a
+┌─
+╵ 4 0
+  6 8
+  6 3
+  2 0
+  5 3
+  9 8
+      ┘
+   ⍉a
+┌─
+╵ 4 6 5
+  0 3 3
+  6 2 9
+  8 0 8
+        ┘
+   ≢⍉a
+⟨ 4 3 ⟩
+   ≢a
+⟨ 3 4 ⟩
+
+#>>> a
+#array([[3., 7., 3., 4.],
+#       [1., 4., 2., 2.],
+#       [7., 2., 4., 9.]])
+#>>> a.resize((2, 6))
+#>>> a
+#array([[3., 7., 3., 4., 1., 4.],
+#       [2., 2., 7., 2., 4., 9.]])
+
+   a ← ⌊10×3‿4 •rand.Range 0
+┌─
+╵ 2 1 2 9
+  1 5 5 5
+  1 8 1 5
+          ┘
+   a (⥊˜)↩ 2‿6
+┌─
+╵ 2 1 2 9 1 5
+  5 5 1 8 1 5
+              ┘
+   a
+┌─
+╵ 2 1 2 9 1 5
+  5 5 1 8 1 5
+              ┘
+
+# Shape Manipulation
+
+## Changing the shap of an array
+
+#>>> a.reshape(3, -1)
+#array([[3., 7., 3., 4.],
+#       [1., 4., 2., 2.],
+#       [7., 2., 4., 9.]])
+   3‿4 ⥊ a  # I don't think BQN will auto-calc missing dims????
+┌─
+╵ 2 1 2 9
+  1 5 5 5
+  1 8 1 5
+          ┘
+## Stacking together different arrays
+
+#>>> a = np.floor(10 * rg.random((2, 2)))
+#>>> a
+#array([[9., 7.],
+#       [5., 2.]])
+#>>> b = np.floor(10 * rg.random((2, 2)))
+#>>> b
+#array([[1., 9.],
+#       [5., 1.]])
+#>>> np.vstack((a, b))
+#array([[9., 7.],
+#       [5., 2.],
+#       [1., 9.],
+#       [5., 1.]])
+#>>> np.hstack((a, b))
+#array([[9., 7., 1., 9.],
+#       [5., 2., 5., 1.]])
+
+a ← ⌊10× 2‿2 •rand.Range 0
+┌─
+╵ 2 5
+  6 7
+      ┘
+   b ← ⌊10× 2‿2 •rand.Range 0
+┌─
+╵ 1 2
+  0 4
+      ┘
+   a ∾ b
+┌─
+╵ 2 5
+  6 7
+  1 2
+  0 4
+      ┘
+   a ∾˘ b
+┌─
+╵ 2 5 1 2
+  6 7 0 4
+          ┘
+
+
+#>>> from numpy import newaxis
+#>>> np.column_stack((a, b))  # with 2D arrays
+#array([[9., 7., 1., 9.],
+#       [5., 2., 5., 1.]])
+#>>> a = np.array([4., 2.])
+#>>> b = np.array([3., 8.])
+#>>> np.column_stack((a, b))  # returns a 2D array
+#array([[4., 3.],
+#       [2., 8.]])
+#>>> np.hstack((a, b))        # the result is different
+#array([4., 2., 3., 8.])
+#>>> a[:, newaxis]  # view `a` as a 2D column vector
+#array([[4.],
+#       [2.]])
+#>>> np.column_stack((a[:, newaxis], b[:, newaxis]))
+#array([[4., 3.],
+#       [2., 8.]])
+#>>> np.hstack((a[:, newaxis], b[:, newaxis]))  # the result is the same
+#array([[4., 3.],
+#       [2., 8.]])
+
+   a ∾˘ b
+┌─
+╵ 2 5 1 2
+  6 7 0 4
+          ┘
+   a ← 4‿2
+⟨ 4 2 ⟩
+   b ← 3‿8
+⟨ 3 8 ⟩
+   ⍉>a‿b
+┌─
+╵ 4 3
+  2 8
+      ┘
+   a∾b
+⟨ 4 2 3 8 ⟩
+   ⍉>⟨a⟩
+┌─
+╵ 4
+  2
+    ┘
+   (⍉>⟨a⟩) ∾˘ ⍉>⟨b⟩
+┌─
+╵ 4 3
+  2 8
+      ┘
+
+# Splitting one array into several smaller ones
+
+#>>> a = np.floor(10 * rg.random((2, 12)))
+#>>> a
+#array([[6., 7., 6., 9., 0., 5., 4., 0., 6., 8., 5., 2.],
+#       [8., 5., 5., 7., 1., 8., 6., 7., 1., 8., 1., 0.]])
+#>>> # Split `a` into 3
+#>>> np.hsplit(a, 3)
+#[array([[6., 7., 6., 9.],
+#       [8., 5., 5., 7.]]), array([[0., 5., 4., 0.],
+#       [1., 8., 6., 7.]]), array([[6., 8., 5., 2.],
+#       [1., 8., 1., 0.]])]
+#>>> # Split `a` after the third and the fourth column
+#>>> np.hsplit(a, (3, 4))
+#[array([[6., 7., 6.],
+#       [8., 5., 5.]]), array([[9.],
+#       [7.]]), array([[0., 5., 4., 0., 6., 8., 5., 2.],
+#       [1., 8., 6., 7., 1., 8., 1., 0.]])]
+
+   a ← ⌊10×2‿12 •rand.Range 0
+┌─
+╵ 4 1 1 9 5 1 2 3 3 1 1 0
+  2 9 8 1 9 4 3 4 1 8 1 1
+                          ┘
+   a
+┌─
+╵ 4 1 1 9 5 1 2 3 3 1 1 0
+  2 9 8 1 9 4 3 4 1 8 1 1
+                          ┘
+   ⊏⟨⟨2⟩,3⥊4⟩ /¨⊸⊔ a  # explicit, knowing/using a dims
+┌─
+· ┌─          ┌─          ┌─
+  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
+    2 9 8 1     9 4 3 4     1 8 1 1
+            ┘           ┘           ┘
+                                      ┘
+   ⊏⟨⟨⊑≢a⟩,3⥊⌈(1⊑≢a)÷3⟩ /¨⊸⊔ a  # in terms of number of partitions
+┌─
+· ┌─          ┌─          ┌─
+  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
+    2 9 8 1     9 4 3 4     1 8 1 1
+            ┘           ┘           ┘
+                                      ┘
+   ⍉¨(/3⥊4) ⊔ ⍉a  # my initial attempt
+┌─
+· ┌─          ┌─          ┌─
+  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
+    2 9 8 1     9 4 3 4     1 8 1 1
+            ┘           ┘           ┘
+                                      ┘
+# Marshal's responses on how to partition
+⟨2‿3,1‿2‿0‿1⟩ /¨⊸⊔ 'a'+⥊⟜(↕×´)5‿4
+(/1‿2‿0‿1)⊸⊔˘ 'a'+⥊⟜(↕×´)2‿4
+# That's Cells (˘) to partition only the second axis.
+⟨2⥊0, (3⥊4)/↕3⟩ ⊔ 2‿12⥊"abcde"
+# But note that the result has rank 2 rather than being a list, so you should probably apply ≍⁼ or ⊏ to it.
