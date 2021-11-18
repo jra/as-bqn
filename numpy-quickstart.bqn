@@ -898,23 +898,216 @@ a ← ⌊10× 2‿2 •rand.Range 0
     2 9 8 1     9 4 3 4     1 8 1 1
             ┘           ┘           ┘
                                       ┘
-   ⊏⟨⟨⊑≢a⟩,3⥊⌈(1⊑≢a)÷3⟩ /¨⊸⊔ a  # in terms of number of partitions
+#   ⊏⟨⟨⊑≢a⟩,3⥊⌈(1⊑≢a)÷3⟩ /¨⊸⊔ a  # in terms of number of partitions, create fn with this?
+#┌─
+#· ┌─          ┌─          ┌─
+#  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
+#    2 9 8 1     9 4 3 4     1 8 1 1
+#            ┘           ┘           ┘
+#                                      ┘
+#   ⍉¨(/3⥊4) ⊔ ⍉a  # my initial attempt
+#┌─
+#· ┌─          ┌─          ┌─
+#  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
+#    2 9 8 1     9 4 3 4     1 8 1 1
+#            ┘           ┘           ┘
+#                                      ┘
+## Marshal's responses on how to partition
+#⟨2‿3,1‿2‿0‿1⟩ /¨⊸⊔ 'a'+⥊⟜(↕×´)5‿4
+#(/1‿2‿0‿1)⊸⊔˘ 'a'+⥊⟜(↕×´)2‿4
+## That's Cells (˘) to partition only the second axis.
+#⟨2⥊0, (3⥊4)/↕3⟩ ⊔ 2‿12⥊"abcde"
+## But note that the result has rank 2 rather than being a list, so you should probably apply ≍⁼ or ⊏ to it.
+   ⊏⟨⟨2⟩,3‿1‿8⟩ /¨⊸⊔ a
 ┌─
-· ┌─          ┌─          ┌─
-  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
-    2 9 8 1     9 4 3 4     1 8 1 1
-            ┘           ┘           ┘
+· ┌─        ┌─    ┌─
+  ╵ 4 1 1   ╵ 9   ╵ 5 1 2 3 3 1 1 0
+    2 9 8     1     9 4 3 4 1 8 1 1
+          ┘     ┘                   ┘
                                       ┘
-   ⍉¨(/3⥊4) ⊔ ⍉a  # my initial attempt
+
+
+# Copies and Views
+
+## No Copy at All
+
+#>>> a = np.array([[ 0,  1,  2,  3],
+#...               [ 4,  5,  6,  7],
+#...               [ 8,  9, 10, 11]])
+#>>> b = a            # no new object is created
+#>>> b is a           # a and b are two names for the same ndarray object
+#True
+
+   a ← 3‿4⥊↕12
 ┌─
-· ┌─          ┌─          ┌─
-  ╵ 4 1 1 9   ╵ 5 1 2 3   ╵ 3 1 1 0
-    2 9 8 1     9 4 3 4     1 8 1 1
-            ┘           ┘           ┘
-                                      ┘
-# Marshal's responses on how to partition
-⟨2‿3,1‿2‿0‿1⟩ /¨⊸⊔ 'a'+⥊⟜(↕×´)5‿4
-(/1‿2‿0‿1)⊸⊔˘ 'a'+⥊⟜(↕×´)2‿4
-# That's Cells (˘) to partition only the second axis.
-⟨2⥊0, (3⥊4)/↕3⟩ ⊔ 2‿12⥊"abcde"
-# But note that the result has rank 2 rather than being a list, so you should probably apply ≍⁼ or ⊏ to it.
+╵ 0 1  2  3
+  4 5  6  7
+  8 9 10 11
+            ┘
+   b ← a
+┌─
+╵ 0 1  2  3
+  4 5  6  7
+  8 9 10 11
+            ┘
+   a 1000⌾(1‿2⊸⊑)↩  # is this the right way to change an element
+┌─
+╵ 0 1    2  3
+  4 5 1000  7
+  8 9   10 11
+              ┘
+   a
+┌─
+╵ 0 1    2  3
+  4 5 1000  7
+  8 9   10 11
+              ┘
+   b  # arrays are immutable
+┌─
+╵ 0 1  2  3
+  4 5  6  7
+  8 9 10 11
+            ┘
+
+
+#>>> def f(x):
+#...     print(id(x))
+#...
+#>>> id(a)  # id is a unique identifier of an object
+#148293216  # may vary
+#>>> f(a)
+#148293216  # may vary
+
+   F ← {𝕩 999⌾(1‿2⊸⊑)↩}
+(function block)
+   F a
+┌─
+╵ 0 1   2  3
+  4 5 999  7
+  8 9  10 11
+             ┘
+   a  # looks like not pass by ref
+┌─
+╵ 0 1    2  3
+  4 5 1000  7
+  8 9   10 11
+              ┘
+
+## View or Shallow Copy
+
+#>>> c = a.view()
+#>>> c is a
+#False
+#>>> c.base is a            # c is a view of the data owned by a
+#True
+#>>> c.flags.owndata
+#False
+#>>>
+#>>> c = c.reshape((2, 6))  # a's shape doesn't change
+#>>> a.shape
+#(3, 4)
+#>>> c[0, 4] = 1234         # a's data changes
+#>>> a
+#array([[   0,    1,    2,    3],
+#       [1234,    5,    6,    7],
+#       [   8,    9,   10,   11]])
+
+   c ← a
+┌─
+╵ 0 1    2  3
+  4 5 1000  7
+  8 9   10 11
+              ┘
+   c 2‿6⊸⥊↩
+┌─
+╵    0 1 2 3  4  5
+  1000 7 8 9 10 11
+                   ┘
+   ≢a
+⟨ 3 4 ⟩
+   c 1234⌾(0‿4⊸⊑)↩
+┌─
+╵    0 1 2 3 1234  5
+  1000 7 8 9   10 11
+                     ┘
+   a  # c is not a view of a, it is its own copy
+┌─
+╵ 0 1    2  3
+  4 5 1000  7
+  8 9   10 11
+              ┘
+
+#>>> s = a[:, 1:3]
+#>>> s[:] = 10  # s[:] is a view of s. Note the difference between s = 10 and s[:] = 10
+#>>> a
+#array([[   0,   10,   10,    3],
+#       [1234,   10,   10,    7],
+#       [   8,   10,   10,   11]])
+
+   s ← 1‿2⊏⎉1 a
+┌─
+╵ 1    2
+  5 1000
+  9   10
+         ┘
+   s 10¨⌾(⟨↕3,↕2⟩⊸⊏)↩  # s gets a new array
+┌─
+╵ 10 10
+  10 10
+  10 10
+        ┘
+   s
+┌─
+╵ 10 10
+  10 10
+  10 10
+        ┘
+   a  # s is not a view of a, they are distinct
+┌─
+╵ 0 1    2  3
+  4 5 1000  7
+  8 9   10 11
+              ┘
+
+## Deep Copy
+
+#>>> d = a.copy()  # a new array object with new data is created
+#>>> d is a
+#False
+#>>> d.base is a  # d doesn't share anything with a
+#False
+#>>> d[0, 0] = 9999
+#>>> a
+#array([[   0,   10,   10,    3],
+#       [1234,   10,   10,    7],
+#       [   8,   10,   10,   11]])
+
+
+#>>> a = np.arange(int(1e8))
+#>>> b = a[:100].copy()
+#>>> del a  # the memory of ``a`` can be released.
+
+
+## Functions and Methods Overview
+
+# Less Basic
+## Broadcasting Rules
+
+# Advanced indexing and index tricks
+## Indexing with Arrays of Indicies
+## Indexing with Boolean Arrays
+## The ix_() function
+## Indexing with strings
+
+# Tricks and Tips
+## "Automatic" Reshaping
+## Vector Stacking
+## Histograms
+
+# Further reading
+## The Python tutorial
+## Command Reference
+## SciPy Tutorial
+## SciPy Lecture Notes
+## A matlab, R, IDL, NumPy/SciPy dictionary
+## Tutorial: Linear algebra on n-dimensional arrays
