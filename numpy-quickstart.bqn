@@ -1165,14 +1165,264 @@ c ← >>⟨⟨0‿1‿2, 10‿12‿13⟩, ⟨100‿101‿102, 110‿112‿113⟩
 #>>> b = a[:100].copy()
 #>>> del a  # the memory of ``a`` can be released.
 
+   6 ((<↑)∾(<∘(-⊸↑))) a←↕1e4
+⟨ ⟨ 0 1 2 3 4 5 ⟩ ⟨ 9994 9995 9996 9997 9998 9999 ⟩ ⟩
+   6 ((<↑)∾(<∘(-⊸↑))) b←100↑a
+⟨ ⟨ 0 1 2 3 4 5 ⟩ ⟨ 94 95 96 97 98 99 ⟩ ⟩
+# not sure how to release a memory
 
 ## Functions and Methods Overview
 
 # Less Basic
+
 ## Broadcasting Rules
 
 # Advanced indexing and index tricks
+
 ## Indexing with Arrays of Indicies
+
+#>>> a = np.arange(12)**2  # the first 12 square numbers
+#>>> i = np.array([1, 1, 3, 8, 5])  # an array of indices
+#>>> a[i]  # the elements of `a` at the positions `i`
+#array([ 1,  1,  9, 64, 25])
+#>>>
+#>>> j = np.array([[3, 4], [9, 7]])  # a bidimensional array of indices
+#>>> a[j]  # the same shape as `j`
+#array([[ 9, 16],
+#       [81, 49]])
+
+   a ← (↕12)⋆2
+⟨ 0 1 4 9 16 25 36 49 64 81 100 121 ⟩
+   i ← 1‿1‿3‿8‿5
+⟨ 1 1 3 8 5 ⟩
+   i ⊏ a
+⟨ 1 1 9 64 25 ⟩
+   j ← >⟨3‿4, 9‿7⟩
+┌─
+╵ 3 4
+  9 7
+      ┘
+   j ⊏ a
+┌─
+╵  9 16
+  81 49
+        ┘
+
+#>>> palette = np.array([[0, 0, 0],         # black
+#...                     [255, 0, 0],       # red
+#...                     [0, 255, 0],       # green
+#...                     [0, 0, 255],       # blue
+#...                     [255, 255, 255]])  # white
+#>>> image = np.array([[0, 1, 2, 0],  # each value corresponds to a color in the palette
+#...                   [0, 3, 4, 0]])
+#>>> palette[image]  # the (2, 4, 3) color image
+#array([[[  0,   0,   0],
+#        [255,   0,   0],
+#        [  0, 255,   0],
+#        [  0,   0,   0]],
+#
+#       [[  0,   0,   0],
+#        [  0,   0, 255],
+#        [255, 255, 255],
+#        [  0,   0,   0]]])
+
+   palette ← (3⥊0)∾(255×=⌜˜∘↕3)∾3⥊255
+┌─
+╵   0   0   0
+  255   0   0
+    0 255   0
+    0   0 255
+  255 255 255
+              ┘
+   image ← >⟨0‿1‿2‿0, 0‿3‿4‿0⟩
+┌─
+╵ 0 1 2 0
+  0 3 4 0
+          ┘
+   image ⊏ palette
+┌─
+╎   0   0   0
+  255   0   0
+    0 255   0
+    0   0   0
+
+    0   0   0
+    0   0 255
+  255 255 255
+    0   0   0
+              ┘
+
+#>>> a = np.arange(12).reshape(3, 4)
+#>>> a
+#array([[ 0,  1,  2,  3],
+#       [ 4,  5,  6,  7],
+#       [ 8,  9, 10, 11]])
+#>>> i = np.array([[0, 1],  # indices for the first dim of `a`
+#...               [1, 2]])
+#>>> j = np.array([[2, 1],  # indices for the second dim
+#...               [3, 3]])
+#>>>
+#>>> a[i, j]  # i and j must have equal shape
+#array([[ 2,  5],
+#       [ 7, 11]])
+#>>>
+#>>> a[i, 2]
+#array([[ 2,  6],
+#       [ 6, 10]])
+#>>>
+#>>> a[:, j]
+#array([[[ 2,  1],
+#        [ 3,  3]],
+#
+#       [[ 6,  5],
+#        [ 7,  7]],
+#
+#       [[10,  9],
+#        [11, 11]]])
+
+   a ← 3‿4⥊↕12
+┌─
+╵ 0 1  2  3
+  4 5  6  7
+  8 9 10 11
+            ┘
+   i ← >⟨0‿1, 1‿2⟩
+┌─
+╵ 0 1
+  1 2
+      ┘
+   j ← >⟨2‿1, 3‿3⟩
+┌─
+╵ 2 1
+  3 3
+      ┘
+   (i⋈¨j)⊑a
+┌─
+╵ 2  5
+  7 11
+       ┘
+   (i⋈¨2)⊑a
+┌─
+╵ 2  6
+  6 10
+       ┘
+   j⊸⊏˘a
+┌─
+╎  2  1
+   3  3
+
+   6  5
+   7  7
+
+  10  9
+  11 11
+        ┘
+
+#>>> l = (i, j)
+#>>> # equivalent to a[i, j]
+#>>> a[l]
+#array([[ 2,  5],
+#       [ 7, 11]])
+
+   l ← i‿j
+┌─
+· ┌─      ┌─
+  ╵ 0 1   ╵ 2 1
+    1 2     3 3
+        ┘       ┘
+                  ┘
+   (⋈¨´l)⊑a
+┌─
+╵ 2  5
+  7 11
+       ┘
+
+#>>> s = np.array([i, j])
+#>>> # not what we want
+#>>> a[s]
+#Traceback (most recent call last):
+#  File "<stdin>", line 1, in <module>
+#IndexError: index 3 is out of bounds for axis 0 with size 3
+#>>> # same as `a[i, j]`
+#>>> a[tuple(s)]
+#array([[ 2,  5],
+#       [ 7, 11]])
+
+   s ← i≍j
+┌─
+╎ 0 1
+  1 2
+
+  2 1
+  3 3
+      ┘
+   (⋈¨˝s)⊑a
+┌─
+╵ 2  5
+  7 11
+       ┘
+
+#>>> time = np.linspace(20, 145, 5)  # time scale
+#>>> data = np.sin(np.arange(20)).reshape(5, 4)  # 4 time-dependent series
+#>>> time
+#array([ 20.  ,  51.25,  82.5 , 113.75, 145.  ])
+#>>> data
+#array([[ 0.        ,  0.84147098,  0.90929743,  0.14112001],
+#       [-0.7568025 , -0.95892427, -0.2794155 ,  0.6569866 ],
+#       [ 0.98935825,  0.41211849, -0.54402111, -0.99999021],
+#       [-0.53657292,  0.42016704,  0.99060736,  0.65028784],
+#       [-0.28790332, -0.96139749, -0.75098725,  0.14987721]])
+#>>> # index of the maxima for each series
+#>>> ind = data.argmax(axis=0)
+#>>> ind
+#array([2, 0, 3, 1])
+#>>> # times corresponding to the maxima
+#>>> time_max = time[ind]
+#>>>
+#>>> data_max = data[ind, range(data.shape[1])]  # => data[ind[0], 0], data[ind[1], 1]...
+#>>> time_max
+#array([ 82.5 ,  20.  , 113.75,  51.25])
+#>>> data_max
+#array([0.98935825, 0.84147098, 0.99060736, 0.6569866 ])
+#>>> np.all(data_max == data.max(axis=0))
+#True
+
+   Linspace ← ((⊑⊢)+(↕⊣)×(-´∘⌽⊢)÷-⟜1)
+(⊑⊢)+(↕⊣)×(-´∘⌽⊢)÷-⟜1
+   time ← 5 Linspace 20‿145
+⟨ 20 51.25 82.5 113.75 145 ⟩
+   data ← •math.Sin 5‿4⥊↕20
+┌─
+╵                   0  0.8414709848078965  0.9092974268256817  0.1411200080598672
+  ¯0.7568024953079282 ¯0.9589242746631385 ¯0.2794154981989259  0.6569865987187891
+   0.9893582466233818  0.4121184852417566 ¯0.5440211108893699 ¯0.9999902065507035
+  ¯0.5365729180004349  0.4201670368266409  0.9906073556948704  0.6502878401571169
+  ¯0.2879033166650653 ¯0.9613974918795568 ¯0.7509872467716761  0.1498772096629523
+                                                                                  ┘
+   ⍒˘⌾⍉⎉2 data  # from BQNcrate "Sort each clumn in ascending order"
+┌─
+╵ 2 0 3 1
+  0 3 0 3
+  4 2 1 4
+  3 1 2 0
+  1 4 4 2
+          ┘
+   ind ← ⊏ ⍒˘⌾⍉⎉2 data
+⟨ 2 0 3 1 ⟩
+   time_max ← ind ⊏ time
+⟨ 82.5 20 113.75 51.25 ⟩
+   data_max ← (ind⋈¨(↕1⊑≢data)) ⊑ data
+⟨ 0.9893582466233818 0.8414709848078965 0.9906073556948704 0.6569865987187891 ⟩
+   ∧´ data_max = ⊏ ∨˘⌾⍉⎉2 data
+1
+   data_max ≡ ⊏ ∨˘⌾⍉⎉2 data
+1
+
+
+
+
+
+
 ## Indexing with Boolean Arrays
 ## The ix_() function
 ## Indexing with strings
@@ -1189,3 +1439,45 @@ c ← >>⟨⟨0‿1‿2, 10‿12‿13⟩, ⟨100‿101‿102, 110‿112‿113⟩
 ## SciPy Lecture Notes
 ## A matlab, R, IDL, NumPy/SciPy dictionary
 ## Tutorial: Linear algebra on n-dimensional arrays
+
+I have a, with 2x2 i and j arrays (row and column indicies):
+```
+   a ← 3‿4⥊↕12
+┌─
+╵ 0 1  2  3
+  4 5  6  7
+  8 9 10 11
+            ┘
+   i ← >⟨0‿1, 1‿2⟩
+┌─
+╵ 0 1
+  1 2
+      ┘
+   j ← 2‿1≍3‿3
+┌─
+╵ 2 1
+  3 3
+      ┘
+   (i⋈¨j)⊑a
+┌─
+╵ 2  5
+  7 11
+       ┘
+
+```
+and I want to select to get a 2x2 like:
+```
+┌─
+╵ 2  5
+  7 10
+       ┘
+```
+How do I do this and what is the right way to go about such a task in BQN?
+
+(i⋈¨j)⊑a
+
+
+For many indices Pick is kind of slow because you have to make a list for each selection. I think the only fast way to do it is with shape arithmetic though.
+
+1
+(+´i‿j×(×`1⊸»)⌾⌽≢a) ⊏ ⥊a
